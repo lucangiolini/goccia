@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1C7ED6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Goccia">
+<title>Goccia</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF3F8;--surface:#FFFFFF;--surface2:#F5F9FC;--ink:#0F2233;--muted:#5A6B7B;--line:#D6E2EA;
+  --water:#1C7ED6;--water2:#5CC2F2;--pee:#E3A010;--pee2:#F6CF5E;--ok:#22A86A;--warn:#D98E04;--bad:#DC4B47;--on:#FFFFFF;
+  --display:"Sora","Segoe UI",system-ui,sans-serif;--body:"Nunito Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1622;--surface:#13212F;--surface2:#0F1C28;--ink:#E8F1F8;--muted:#93A7B8;--line:#24384A;
+  --water:#3D9BF0;--water2:#6FD0FA;--pee:#F2B42C;--pee2:#F8D676;--ok:#3CC487;--warn:#F2B42C;--bad:#F06B66;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0B1622;--surface:#13212F;--surface2:#0F1C28;--ink:#E8F1F8;--muted:#93A7B8;--line:#24384A;
+  --water:#3D9BF0;--water2:#6FD0FA;--pee:#F2B42C;--pee2:#F8D676;--ok:#3CC487;--warn:#F2B42C;--bad:#F06B66;color-scheme:dark;}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--water);outline-offset:2px;border-radius:8px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:12px;padding:14px 18px 8px}
+.logo{width:40px;height:40px;border-radius:12px;overflow:hidden;flex:none;box-shadow:0 6px 16px -8px var(--water)}
+.top h1{font-family:var(--display);font-weight:800;font-size:26px;margin:0;line-height:1}
+.daynav{display:flex;align-items:center;gap:4px;margin-left:auto}
+.daynav button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-weight:800}
+.daynav button:disabled{opacity:.35}
+.daynav span{font-weight:800;font-size:14px;min-width:78px;text-align:center}
+main{max-width:720px;margin:0 auto;padding:0 16px 120px}
+.view{display:none}.view.on{display:block}
+h2{font-family:var(--display);font-weight:700;font-size:21px;margin:22px 0 10px}
+h3{margin:0 0 6px;font-size:15px}
+.muted{color:var(--muted)}.small{font-size:13px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:12px;align-items:stretch}
+.vessel{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:10px;display:flex;align-items:center;justify-content:center}
+.vessel svg{width:100%;height:auto;max-height:300px;display:block}
+.lvl{transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.wave{animation:wave 4s linear infinite}
+.wave.b{animation-duration:6.5s;animation-direction:reverse}
+@keyframes wave{to{transform:translateX(-200px)}}
+.v-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+.v-txt b{font-family:var(--display);font-weight:800;font-size:clamp(26px,8.5vw,40px);line-height:1;text-shadow:0 1px 0 var(--surface),0 0 14px var(--surface)}
+.v-txt span{font-weight:800;font-size:13.5px;text-shadow:0 0 10px var(--surface),0 0 4px var(--surface)}
+.side{display:grid;gap:10px}
+.peebox{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.peehead{display:flex;align-items:center;gap:8px}
+.peehead .n{font-family:var(--display);font-weight:800;font-size:38px;line-height:1;color:var(--pee)}
+.peehead .l{font-size:12.5px;font-weight:700;color:var(--muted);line-height:1.2}
+.peebtn{border:0;border-radius:18px;background:linear-gradient(160deg,var(--pee2),var(--pee));color:#3A2600;font-family:var(--display);font-weight:800;font-size:22px;padding:16px 8px;box-shadow:0 12px 24px -14px var(--pee);touch-action:manipulation;position:relative;overflow:hidden}
+.peebtn:active{transform:scale(.97)}
+.peebtn .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(4);opacity:0}}
+.sizes{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
+.sizes button{border:1.5px solid var(--line);background:var(--surface2);border-radius:10px;padding:5px 0;font-size:12.5px;font-weight:800;line-height:1.15}
+.sizes button small{display:block;font-weight:700;color:var(--muted);font-size:10.5px}
+.sizes button.on{border-color:var(--pee);background:color-mix(in srgb,var(--pee) 16%,var(--surface2))}
+.mini{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px 12px}
+.mini b{font-family:var(--display);font-weight:800;font-size:20px}
+.mini span{display:block;font-size:12px;color:var(--muted);font-weight:700}
+
+/* drinks */
+.drinks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media (min-width:560px){.drinks{grid-template-columns:repeat(4,1fr)}}
+.dk{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:18px;padding:10px 6px 9px;display:flex;flex-direction:column;align-items:center;gap:2px;touch-action:manipulation;overflow:hidden}
+.dk:active{transform:scale(.96)}
+.dk .e{font-size:28px;line-height:1.1}
+.dk .n{font-weight:800;font-size:13px;line-height:1.15;text-align:center}
+.dk .m{font-size:12px;color:var(--muted);font-weight:700}
+.dk.add{border-style:dashed}
+.dk .plus{position:absolute;top:50%;left:50%;font-family:var(--display);font-weight:800;color:var(--water);pointer-events:none;animation:floatup .8s ease-out forwards}
+@keyframes floatup{from{transform:translate(-50%,-30%);opacity:1}to{transform:translate(-50%,-160%);opacity:0}}
+
+/* stats & checks */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.st{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px}
+.st b{display:block;font-family:var(--display);font-weight:800;font-size:20px;line-height:1.1}
+.st span{font-size:12px;color:var(--muted);font-weight:700}
+.checks{display:grid;gap:8px}
+.ck{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.ck i{width:12px;height:12px;border-radius:50%;margin-top:5px;background:var(--c)}
+.ck b{font-size:14.5px}
+.ck div{font-size:13.5px;color:var(--muted)}
+.disc{font-size:12.5px;color:var(--muted);margin-top:10px}
+.linkbtn{background:none;border:0;color:var(--water);font-weight:800;padding:0;text-decoration:underline;text-underline-offset:3px;font-size:13px}
+
+/* timeline */
+.day{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px}
+.day svg{width:100%;height:auto;display:block}
+.list{display:grid;gap:6px;margin-top:10px}
+.row{display:grid;grid-template-columns:52px 34px 1fr auto;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px;text-align:left;width:100%}
+.row .tm{font-family:var(--display);font-weight:700;font-size:14px}
+.row .ic{font-size:22px;text-align:center}
+.row .nm{font-weight:800;font-size:14.5px}
+.row .sb{font-size:12px;color:var(--muted)}
+.row .ml{font-family:var(--display);font-weight:700;font-size:14px}
+.row.pee .ml{color:var(--pee)}
+.row.drink .ml{color:var(--water)}
+.empty{text-align:center;padding:20px 10px;color:var(--muted);font-size:14px}
+
+/* history */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px;margin-top:12px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:6px 12px;font-weight:800;font-size:13.5px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.legend{display:flex;gap:14px;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:5px}
+table.days{width:100%;border-collapse:collapse;font-size:14px}
+table.days th,table.days td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right}
+table.days th:first-child,table.days td:first-child{text-align:left}
+table.days th{font-size:12px;color:var(--muted)}
+.tscroll{overflow-x:auto}
+
+/* settings */
+.field{background:var(--surface2);border-radius:14px;padding:10px 12px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 10px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fields>*{min-width:0}
+.full{grid-column:1/-1}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:40px;height:40px;flex:none;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:800;font-size:15px}
+.stepper input{text-align:center;font-family:var(--display);font-weight:700;font-size:20px}
+.prow{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 12px;margin-top:6px;width:100%;text-align:left}
+.prow .e{font-size:22px}.prow .n{flex:1;font-weight:700}.prow .m{font-size:13px;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 16px;font-weight:800}
+.btn.pri{background:var(--water);color:var(--on);border-color:transparent}
+.btn.pee{background:var(--pee);color:#3A2600;border-color:transparent}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:8px 12px;font-size:14px;border-radius:12px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.switch{position:relative;width:50px;height:30px;flex:none}
+.switch input{position:absolute;inset:0;opacity:0;margin:0;z-index:1;cursor:pointer}
+.switch span{position:absolute;inset:0;border-radius:30px;background:var(--line);transition:background .2s}
+.switch span::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch input:checked+span{background:var(--water)}
+.switch input:checked+span::after{transform:translateX(20px)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+/* nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px))}
+nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;font-weight:800;color:var(--muted);padding:4px 12px;min-width:70px}
+nav.tabs svg{width:24px;height:24px}
+nav.tabs button[aria-current="page"]{color:var(--water)}
+
+/* sheet, dialog, toast */
+.scrim{position:fixed;inset:0;background:rgba(5,15,25,.5);z-index:20;opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:720px;margin:0 auto;background:var(--surface);border-radius:26px 26px 0 0;max-height:92vh;max-height:92dvh;overflow-y:auto;transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);padding:10px 18px calc(22px + env(safe-area-inset-bottom,0px))}
+.sheet.on{transform:none}
+.grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:4px auto 12px}
+.sh{display:flex;align-items:center;gap:10px}
+.sh h2{flex:1;margin:0}
+.x{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface2);flex:none}
+.info p{margin:8px 0;max-width:62ch}
+.info ul{margin:6px 0;padding-left:20px}
+.dlg{position:fixed;inset:0;z-index:60;background:rgba(5,15,25,.55);display:grid;place-items:center;padding:20px}
+.dlg[hidden]{display:none}
+.dlg-box{background:var(--surface);border-radius:22px;padding:20px;max-width:360px;width:100%}
+.dlg-box p{margin:0;font-weight:700}
+.dlg-box .btns{justify-content:flex-end}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:14px;font-weight:700;font-size:14px;opacity:0;transition:all .25s;z-index:50;display:flex;gap:14px;align-items:center;max-width:92vw;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{background:none;border:0;color:var(--water2);font-weight:800;padding:0}
+.vwrap{display:flex;flex-direction:column;gap:8px}
+.vwrap .vessel{flex:1}
+.flags{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.flag{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 4px;font-weight:800;font-size:12.5px}
+.flag small{color:var(--muted);font-weight:700}
+.flag.on{border-color:var(--water);background:color-mix(in srgb,var(--water) 14%,var(--surface))}
+.moreBox{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.moreBox summary{font-weight:800;cursor:pointer;list-style:none;display:flex;justify-content:space-between}
+.moreBox summary::-webkit-details-marker{display:none}
+.moreBox summary::after{content:"›";transition:transform .2s;font-size:20px;line-height:1}
+.moreBox[open] summary::after{transform:rotate(90deg)}
+.moreBox[open] summary{margin-bottom:10px}
+.cdot{display:inline-block;width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.2);margin:0 4px 0 6px;vertical-align:-1px}
+.qbar{position:fixed;left:8px;right:8px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:40;max-width:560px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:12px;box-shadow:0 18px 40px -16px rgba(0,0,0,.45);transform:translateY(30px);opacity:0;transition:transform .25s,opacity .25s;overflow:hidden}
+.qbar.on{transform:none;opacity:1}
+.qprog{position:absolute;left:0;right:0;top:0;height:4px;background:color-mix(in srgb,var(--pee) 20%,transparent)}
+.qprog i{display:block;height:100%;width:100%;background:var(--pee)}
+.qhead{display:flex;align-items:center;gap:8px;margin:2px 0 10px}
+.qt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}.qt b{font-size:14.5px}.qt small{font-size:12px;color:var(--muted);font-weight:700}
+.qhead .btn.sm{padding:7px 10px;font-size:13.5px}
+.qurg{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.qurg .chip{padding:5px 8px!important}.qurg span{font-size:12.5px;font-weight:800;color:var(--muted);margin-right:2px}
+.qcolors{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.qcolors button{aspect-ratio:1;border-radius:50%;border:2px solid rgba(0,0,0,.12);font-weight:800;font-size:12px;color:#3A2600;padding:0}
+.qcolors button.on{outline:3px solid var(--ink);outline-offset:2px}
+.qscale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-weight:700;margin:3px 2px 8px}
+.qbar .chip{font-size:12.5px;padding:5px 10px}
+.qbar .chip.on,.sheet [data-eurg].on,.sheet [data-eleak].on,.sheet [data-esym].on{background:var(--pee);color:#3A2600;border-color:var(--pee)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo" id="logo"></div>
+  <h1>Goccia</h1>
+  <div class="daynav"><button id="dPrev" aria-label="Giorno precedente">‹</button><span id="dLabel">Oggi</span><button id="dNext" aria-label="Giorno successivo">›</button></div>
+</header>
+
+<main>
+<section class="view on" id="v-today">
+  <div class="hero">
+    <div class="vwrap"><div class="vessel" id="vessel"></div><div class="flags" id="flags"></div></div>
+    <div class="side">
+      <div class="peebox">
+        <div class="peehead"><span class="n" id="peeN">0</span><span class="l" id="peeL">pipì<br>oggi</span></div>
+        <button class="peebtn" id="peeBtn" aria-label="Aggiungi una pipì">+1 pipì</button>
+        <div class="sizes" id="sizes"></div>
+      </div>
+      <div class="mini"><b id="lastPee">–</b><span>ultima pipì</span></div>
+    </div>
+  </div>
+
+  <h2>Cosa hai bevuto?</h2>
+  <div class="drinks" id="drinks"></div>
+
+  <h2>Il bilancio</h2>
+  <div class="stats" id="stats"></div>
+  <div class="checks" id="checks" style="margin-top:8px"></div>
+  <details class="moreBox"><summary>Altri dati</summary><div id="more"></div></details>
+  <p class="disc">Valori indicativi basati su stime medie, non sostituiscono il parere di un medico. <button class="linkbtn" id="infoBtn">Come leggere i dati</button></p>
+
+  <h2>La giornata</h2>
+  <div class="day" id="dayChart"></div>
+  <div class="list" id="list"></div>
+  <div class="btns"><button class="btn sm" id="addManual">✍️ Aggiungi a mano</button></div>
+</section>
+
+<section class="view" id="v-history">
+  <h2>Andamento</h2>
+  <div class="seg" id="range"><button class="chip on" data-r="7">7 giorni</button><button class="chip" data-r="14">14 giorni</button><button class="chip" data-r="30">30 giorni</button></div>
+  <div class="card"><div id="hChart"></div><div class="legend"><span style="--c:var(--water)">bevuto</span><span style="--c:var(--pee)">pipì stimata</span><span style="--c:var(--ink)">obiettivo</span></div></div>
+  <div class="stats" id="hStats" style="margin-top:12px"></div>
+  <div class="btns"><button class="btn sm" id="exportDiary">📄 Esporta diario per il medico</button></div>
+  <div class="card tscroll"><table class="days" id="hTable"></table></div>
+</section>
+
+<section class="view" id="v-settings">
+  <h2>Obiettivo e stime</h2>
+  <div class="fields">
+    <div class="field full"><label for="sTarget">Obiettivo bevande al giorno (mL)</label><input type="number" id="sTarget" min="500" max="6000" step="100"></div>
+    <div class="field"><label for="sS">Pipì "Poca" (mL)</label><input type="number" id="sS" min="20" max="1000" step="10"></div>
+    <div class="field"><label for="sM">Pipì "Normale" (mL)</label><input type="number" id="sM" min="20" max="1000" step="10"></div>
+    <div class="field"><label for="sL">Pipì "Tanta" (mL)</label><input type="number" id="sL" min="20" max="1500" step="10"></div>
+    <div class="field"><label for="sTheme">Tema</label><select id="sTheme"><option value="auto">Automatico</option><option value="light">Chiaro</option><option value="dark">Scuro</option></select></div>
+    <div class="field"><label for="sBed">A letto dalle</label><input type="time" id="sBed"></div>
+    <div class="field"><label for="sWake">Sveglia alle</label><input type="time" id="sWake"></div>
+  </div>
+  <p class="small muted">Le pipì tra l'ora di andare a letto e la sveglia contano come notturne. Il giorno della pipì notturna è quello in cui ti svegli.</p>
+  <div class="fields" style="margin-top:10px">
+    <div class="field"><label for="sSport">🏃 Sport aggiunge (mL)</label><input type="number" id="sSport" min="0" max="3000" step="100"></div>
+    <div class="field"><label for="sHeat">☀️ Caldo aggiunge (mL)</label><input type="number" id="sHeat" min="0" max="3000" step="100"></div>
+  </div>
+  <h2>Dettagli dopo +1</h2>
+  <p class="small muted" style="margin-top:-4px">Dopo ogni +1 compare una barra per aggiungere colore, urgenza, perdite o sintomi. Se tocchi qualcosa il timer si ferma e riparte dopo l'ultimo tocco.</p>
+  <div class="seg" id="qmode"><button class="chip" data-qm="lento">Lento</button><button class="chip" data-qm="medio">Medio</button><button class="chip" data-qm="veloce">Veloce</button><button class="chip" data-qm="custom">Personalizzato</button><button class="chip" data-qm="off">Spenta</button></div>
+  <div class="fields" id="qTimes" style="margin-top:10px">
+    <div class="field"><label for="sQ1">Resta aperta (s)</label><input type="number" id="sQ1" min="1" max="60" step="0.5"></div>
+    <div class="field"><label for="sQ2">Dopo l'ultimo tocco (s)</label><input type="number" id="sQ2" min="1" max="60" step="0.5"></div>
+  </div>
+  <p class="small muted">Con la barra spenta, tieni premuto +1 per aprire la scheda completa.</p>
+  <h2>Bevande rapide</h2>
+  <div id="presetList"></div>
+  <div class="btns"><button class="btn sm" id="addPreset">+ Nuova bevanda</button><button class="btn sm" id="resetPresets">Ripristina predefinite</button></div>
+  <h2>Dati</h2>
+  <div class="btns" style="margin-top:0">
+    <button class="btn sm" id="bExport">Esporta backup</button>
+    <label class="btn sm" style="cursor:pointer">Importa backup<input type="file" id="bImport" accept=".json,application/json" hidden></label>
+    <button class="btn sm danger" id="bReset">Cancella tutto</button>
+  </div>
+  <p class="small muted" id="syncInfo" style="margin-top:14px"></p>
+</section>
+</main>
+
+<nav class="tabs" aria-label="Sezioni">
+  <button data-v="today" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>Oggi</button>
+  <button data-v="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Storico</button>
+  <button data-v="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Impostazioni</button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+<div class="dlg" id="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dlgT" hidden><div class="dlg-box"><p id="dlgT"></p><div class="btns"><button class="btn" id="dlgNo">Annulla</button><button class="btn pri" id="dlgOk">Conferma</button></div></div></div>
+<div class="qbar" id="qbar" role="dialog" aria-label="Dettagli pipì" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastT"></span><button id="toastB" hidden>Annulla</button></div>
+
+<script>
+"use strict";
+const ICON=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5CC2F2"/><stop offset="1" stop-color="#1565C0"/></linearGradient><linearGradient id="d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DDF1FF"/></linearGradient><clipPath id="c"><path d="M256 92c0 0 128 140 128 228a128 128 0 0 1-256 0c0-88 128-228 128-228z"/></clipPath></defs><rect width="512" height="512" rx="116" fill="url(#g)"/><path d="M256 92c0 0 128 140 128 228a128 128 0 0 1-256 0c0-88 128-228 128-228z" fill="url(#d)"/><g clip-path="url(#c)"><path d="M100 330 q39 -26 78 0 t78 0 t78 0 t78 0 V460 H100z" fill="#1C7ED6"/><path d="M100 352 q39 -20 78 0 t78 0 t78 0 t78 0 V460 H100z" fill="#5CC2F2" opacity=".55"/></g><ellipse cx="206" cy="270" rx="18" ry="34" fill="#fff" opacity=".85" transform="rotate(24 206 270)"/><circle cx="398" cy="128" r="30" fill="#F6CF5E"/><text x="398" y="140" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="34" fill="#5A3B00">+1</text></svg>`;
+document.getElementById('logo').innerHTML=ICON;
+
+/* ---------- presets (stime medie) ---------- */
+const DEF_PRESETS=[
+ {e:'💧',n:'Bicchiere',ml:200,caf:0,abv:0,sug:0},
+ {e:'🫗',n:'Bicchiere grande',ml:300,caf:0,abv:0,sug:0},
+ {e:'🧴',n:'Bottiglietta 0,5 L',ml:500,caf:0,abv:0,sug:0},
+ {e:'🚰',n:'Borraccia',ml:750,caf:0,abv:0,sug:0},
+ {e:'☕',n:'Espresso',ml:30,caf:65,abv:0,sug:0},
+ {e:'🫖',n:'Caffè moka',ml:50,caf:80,abv:0,sug:0},
+ {e:'🥛',n:'Cappuccino',ml:160,caf:65,abv:0,sug:0},
+ {e:'🍵',n:'Tè o tisana',ml:250,caf:30,abv:0,sug:0},
+ {e:'🧃',n:'Succo di frutta',ml:200,caf:0,abv:0,sug:20},
+ {e:'🥤',n:'Lattina di bibita',ml:330,caf:0,abv:0,sug:35},
+ {e:'🍺',n:'Birra media',ml:400,caf:0,abv:5,sug:0},
+ {e:'🍷',n:'Calice di vino',ml:150,caf:0,abv:12,sug:0},
+ {e:'🥃',n:'Amaro o distillato',ml:40,caf:0,abv:35,sug:0},
+];
+const alcG=(ml,abv)=>Math.round(ml*(abv||0)/100*0.789*10)/10;
+const QSPEED={lento:[10,6],medio:[6,4],veloce:[4,2]};
+const URINE=['#F7F5DF','#F4EDB0','#F1E07A','#EDCF49','#E3B72A','#D49A1C','#BA7C16','#946012'];
+const URG=['Nessuna','Lieve','Forte','Urgente'];
+const SYM={bruciore:'Bruciore',dolore:'Dolore',sangue:'Sangue'};
+const H=36e5, DAY=864e5;
+const LS='goccia.v1';
+const uid=p=>p+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const defState=()=>({settings:{target:2000,sizes:[150,250,400],bed:'23:00',wake:'07:00',theme:'auto',size:1,qmode:'medio',q1:6,q2:4,sportMl:500,heatMl:500},presets:DEF_PRESETS.map(p=>({id:uid('p'),...p})),entries:[],days:{},updatedAt:0});
+let S=defState();
+function migrate(){ S.presets.forEach(p=>{ if(p.abv===undefined){ const d=DEF_PRESETS.find(x=>x.n===p.n); p.abv= d? d.abv : (p.alc?12:0); p.sug= d? d.sug : 0; } delete p.alc; });
+  S.entries.forEach(e=>{ if(e.t==='drink' && e.alcG===undefined){ const d=DEF_PRESETS.find(x=>x.n===e.n); e.alcG= e.alc? alcG(e.ml,d?d.abv:12) : 0; e.sug= e.sug||0; } }); S.days=S.days||{}; }
+function load(){ try{ const r=localStorage.getItem(LS); if(r){ const o=JSON.parse(r); S=Object.assign(defState(),o); S.settings=Object.assign(defState().settings,o.settings||{}); } }catch(e){} migrate(); }
+let dbRef=null, wT=null;
+function save(){ S.updatedAt=Date.now(); try{ localStorage.setItem(LS,JSON.stringify(S)); }catch(e){} if(dbRef){ clearTimeout(wT); wT=setTimeout(()=>dbRef.set(JSON.parse(JSON.stringify(S))).catch(()=>{}),900); } }
+async function initCloud(){
+  const info=$('#syncInfo');
+  info.textContent='I dati restano su questo dispositivo. Usa il backup per spostarli.';
+  if(!window.claude||typeof window.claude.use!=='function') return;
+  try{
+    const [db,u]=await Promise.all([window.claude.use('db'),window.claude.use('user')]); if(!db||!u) return;
+    dbRef=db.doc('data/users/me/goccia');
+    const sn=await dbRef.get();
+    if(sn.exists){ const o=sn.data(); if((o.updatedAt||0)>(S.updatedAt||0)){ S=Object.assign(defState(),o); S.settings=Object.assign(defState().settings,o.settings||{}); migrate(); try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){} renderAll(); } else if(S.updatedAt>(o.updatedAt||0)) dbRef.set(JSON.parse(JSON.stringify(S))).catch(()=>{}); }
+    else if(S.updatedAt) dbRef.set(JSON.parse(JSON.stringify(S))).catch(()=>{});
+    info.textContent='I dati sono salvati nel tuo account e visibili solo a te.';
+  }catch(e){ dbRef=null; }
+}
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const nf=(v,d=1)=>Number(v||0).toLocaleString('it-IT',{maximumFractionDigits:d});
+const fmtL=ml=> ml>=1000? (ml/1000).toLocaleString('it-IT',{maximumFractionDigits:2})+' L' : Math.round(ml)+' mL';
+const dayStart=t=>{ const d=new Date(t); d.setHours(0,0,0,0); return d.getTime(); };
+const hm=t=>new Date(t).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+const mins=s=>{ const [a,b]=String(s||'0:0').split(':').map(Number); return (a||0)*60+(b||0); };
+function vib(p){ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} }
+let toastUndo=null;
+function toast(t,undo){ $('#toastT').textContent=t; $('#toastB').hidden=!undo; toastUndo=undo||null; $('#toast').classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>{ $('#toast').classList.remove('on'); toastUndo=null; },undo?4500:2200); }
+$('#toastB').addEventListener('click',()=>{ if(toastUndo) toastUndo(); toastUndo=null; $('#toast').classList.remove('on'); });
+let dlgCb=null;
+function ask(msg,ok,cb,danger){ $('#dlgT').textContent=msg; $('#dlgOk').textContent=ok||'Conferma'; $('#dlgOk').style.background=danger?'var(--bad)':''; dlgCb=cb; $('#dlg').hidden=false; $('#dlgOk').focus(); }
+function dlgClose(run){ $('#dlg').hidden=true; const cb=dlgCb; dlgCb=null; if(run&&cb) cb(); }
+$('#dlgOk').addEventListener('click',()=>dlgClose(true)); $('#dlgNo').addEventListener('click',()=>dlgClose(false));
+$('#dlg').addEventListener('click',e=>{ if(e.target.id==='dlg') dlgClose(false); });
+
+/* ---------- giorni e notte ---------- */
+let dayOff=0;
+const viewStart=()=>dayStart(Date.now())-dayOff*DAY;
+function isNight(ts){ const d=new Date(ts), m=d.getHours()*60+d.getMinutes(), b=mins(S.settings.bed), w=mins(S.settings.wake); return b>w ? (m>=b||m<w) : (m>=b&&m<w); }
+function dayOf(e){ return dayStart(e.ts); }
+function entriesOn(ds){ return S.entries.filter(e=>dayOf(e)===ds).sort((a,b)=>a.ts-b.ts); }
+/* notte "di" un giorno = dalla sera prima all'ora di sveglia di quel giorno */
+function nightPeeList(ds){ const w=mins(S.settings.wake), b=mins(S.settings.bed); const from=ds-DAY+b*6e4, to=ds+w*6e4; return S.entries.filter(e=>e.t==='pee'&&e.ts>=from&&e.ts<to); }
+const dKey=ds=>{ const d=new Date(ds); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const flagsOf=ds=>(S.days&&S.days[dKey(ds)])||{};
+const targetOf=ds=>{ const f=flagsOf(ds); return S.settings.target+(f.sport?S.settings.sportMl:0)+(f.heat?S.settings.heatMl:0); };
+function dayStats(ds){
+  const es=entriesOn(ds), dr=es.filter(e=>e.t==='drink'), pe=es.filter(e=>e.t==='pee');
+  const inMl=dr.reduce((a,e)=>a+e.ml,0), outMl=pe.reduce((a,e)=>a+e.ml,0);
+  const dayPees=pe.filter(e=>!isNight(e.ts)).length;
+  const nightList=nightPeeList(ds), nightVol=nightList.reduce((a,e)=>a+e.ml,0), dayVol=pe.filter(e=>!isNight(e.ts)).reduce((a,e)=>a+e.ml,0);
+  const cols=pe.filter(e=>e.col).map(e=>e.col), urgs=pe.filter(e=>e.urg!=null).map(e=>e.urg);
+  const dts=pe.filter(e=>!isNight(e.ts)).map(e=>e.ts); const gaps=dts.slice(1).map((t,i)=>t-dts[i]);
+  return {es,dr,pe,inMl,outMl,n:pe.length,dayPees,night:nightList.length,caf:dr.reduce((a,e)=>a+(e.caf||0),0),alcG:Math.round(dr.reduce((a,e)=>a+(e.alcG||0),0)*10)/10,sug:dr.reduce((a,e)=>a+(e.sug||0),0),avg:pe.length?outMl/pe.length:0,
+    col: cols.length? cols.reduce((a,b)=>a+b,0)/cols.length : null, lastCol: cols.at(-1)||null, urg: urgs.length? urgs.reduce((a,b)=>a+b,0)/urgs.length : null,
+    leaks:pe.filter(e=>e.leak).length, sym:[...new Set(pe.flatMap(e=>e.sym||[]))], gap: gaps.length? gaps.reduce((a,b)=>a+b,0)/gaps.length : null,
+    nightPct: (nightVol+dayVol)? nightVol/(nightVol+dayVol) : null, target:targetOf(ds), flags:flagsOf(ds)};
+}
+
+/* ---------- render: hero ---------- */
+let lastLevel=null;
+function renderVessel(st){
+  const T=st.target, p=clamp(st.inMl/T,0,1), y=20+230*(1-p);
+  const wave='M0 10 Q25 0 50 10 T100 10 T150 10 T200 10 T250 10 T300 10 T350 10 T400 10 V320 H0 Z';
+  $('#vessel').innerHTML=`<svg viewBox="0 0 200 270" role="img" aria-label="Bevuto ${fmtL(st.inMl)} su ${fmtL(T)}">
+    <defs><clipPath id="vc"><rect x="22" y="20" width="156" height="230" rx="44"/></clipPath>
+    <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--water2)"/><stop offset="1" stop-color="var(--water)"/></linearGradient></defs>
+    <rect x="22" y="20" width="156" height="230" rx="44" fill="var(--surface2)" stroke="var(--line)" stroke-width="2"/>
+    <g clip-path="url(#vc)"><g class="lvl" id="lvl" style="transform:translateY(${lastLevel??y}px)">
+      <path class="wave b" d="${wave}" fill="var(--water2)" opacity=".45" transform="translate(0,-4)"/>
+      <path class="wave" d="${wave}" fill="url(#wg)"/>
+    </g>
+    ${[.25,.5,.75].map(f=>`<line x1="150" x2="178" y1="${20+230*(1-f)}" y2="${20+230*(1-f)}" stroke="var(--ink)" stroke-opacity=".18" stroke-width="2"/>`).join('')}
+    <rect x="40" y="40" width="10" height="70" rx="5" fill="#fff" opacity=".35"/></g>
+  </svg><div class="v-txt"><b>${fmtL(st.inMl)}</b><span>di ${fmtL(T)}${st.inMl>=T?' 🎉':''}</span><span style="margin-top:4px">${Math.round(st.inMl/T*100)}%</span></div>`;
+  const f=st.flags; $('#flags').innerHTML=`<button class="flag ${f.sport?'on':''}" data-flag="sport" aria-pressed="${!!f.sport}">🏃 Sport <small>+${S.settings.sportMl}</small></button><button class="flag ${f.heat?'on':''}" data-flag="heat" aria-pressed="${!!f.heat}">☀️ Caldo <small>+${S.settings.heatMl}</small></button>`;
+  requestAnimationFrame(()=>{ const g=$('#lvl'); if(g) g.style.transform=`translateY(${y}px)`; lastLevel=y; });
+}
+function renderSizes(){
+  const s=S.settings.sizes, lab=['Poca','Normale','Tanta'];
+  $('#sizes').innerHTML=s.map((v,i)=>`<button data-size="${i}" class="${S.settings.size===i?'on':''}">${lab[i]}<small>${v}</small></button>`).join('')+`<button data-size="m" aria-label="Pipì con quantità a mano">✍️<small>mL</small></button>`;
+}
+function renderDrinks(){
+  $('#drinks').innerHTML=S.presets.map(p=>`<button class="dk" data-p="${p.id}" aria-label="Aggiungi ${esc(p.n)}, ${p.ml} millilitri"><span class="e">${esc(p.e)}</span><span class="n">${esc(p.n)}</span><span class="m">${p.ml} mL</span></button>`).join('')
+   +`<button class="dk add" data-p="manual"><span class="e">✍️</span><span class="n">Altro</span><span class="m">a mano</span></button>`;
+}
+
+/* ---------- render: bilancio ---------- */
+function checksFor(st,ds){
+  const today=dayOff===0, hNow=new Date().getHours()+new Date().getMinutes()/60;
+  const wake=mins(S.settings.wake)/60, bed=mins(S.settings.bed)/60;
+  const span=Math.max(1,(bed>wake?bed:24)-wake), elapsed= today? clamp((hNow-wake)/span,0,1) : 1;
+  const out=[];
+  // idratazione
+  const TG=st.target, exp=TG*elapsed, p=st.inMl/TG;
+  if(today && elapsed<1){
+    const r= exp? st.inMl/exp : 1;
+    if(exp<150) out.push({c:'var(--ok)',t:'Giornata appena iniziata',d:'Un bicchiere d\'acqua al risveglio è un buon inizio.'}); else
+    out.push(r>=.85?{c:'var(--ok)',t:'Idratazione in linea',d:`A quest'ora dovresti essere intorno a ${fmtL(exp)}: ci sei.`}
+      : r>=.6?{c:'var(--warn)',t:'Un po\' indietro con i liquidi',d:`Per essere in linea a quest'ora mancano circa ${fmtL(exp-st.inMl)}.`}
+      :{c:'var(--bad)',t:'Bevi qualcosa',d:`Sei a ${fmtL(st.inMl)}, a quest'ora l'ideale sarebbe circa ${fmtL(exp)}.`});
+  } else out.push(p>=1?{c:'var(--ok)',t:'Obiettivo raggiunto',d:`${fmtL(st.inMl)} di bevande.`}: p>=.7?{c:'var(--warn)',t:'Quasi all\'obiettivo',d:`Sono mancati circa ${fmtL(TG-st.inMl)}.`}:{c:'var(--bad)',t:'Liquidi scarsi',d:`${fmtL(st.inMl)} su ${fmtL(TG)}.`});
+  if(st.sym.length) out.unshift({c:'var(--bad)',t:'Sintomi segnalati: '+st.sym.map(s=>SYM[s].toLowerCase()).join(', '),d:'Bruciore, dolore o sangue nelle urine vanno riferiti al medico, soprattutto se si ripetono o c\'è febbre.'});
+  // frequenza
+  if(st.n>0 || !today){
+    const dp=st.dayPees;
+    if(dp>8) out.push({c:'var(--warn)',t:`${dp} pipì di giorno`,d:'Più della media (in genere 4–8). Può dipendere da quanto e cosa bevi, per esempio caffè o alcol.'});
+    else if(dp<4 && (!today||elapsed>.75)) out.push({c:'var(--warn)',t:`Solo ${dp} pipì di giorno`,d:'Meno della media (in genere 4–8): spesso succede quando si beve poco.'});
+    else if(dp>=4) out.push({c:'var(--ok)',t:`${dp} pipì di giorno`,d:'Nella media indicativa di 4–8.'});
+  }
+  // notte
+  if(st.night>=2) out.push({c:'var(--warn)',t:`${st.night} pipì stanotte`,d:'Svegliarsi 2 o più volte a notte è considerato frequente. Se succede spesso, parlane con il medico.'});
+  else if(!today||hNow>wake) out.push({c:'var(--ok)',t:st.night?'1 pipì stanotte':'Notte senza pipì',d:'Fino a una volta a notte è considerato normale.'});
+  // volume medio
+  if(st.n>=2){ const a=st.avg; out.push(a<150?{c:'var(--warn)',t:`Volume medio basso, circa ${Math.round(a)} mL`,d:'In media una pipì è intorno a 200–400 mL. Se le tue stime sono realistiche e succede spesso, segnalalo al medico.'}:a>500?{c:'var(--warn)',t:`Volume medio alto, circa ${Math.round(a)} mL`,d:'Sopra la media di 200–400 mL: forse tendi a trattenere a lungo, oppure le stime sono abbondanti.'}:{c:'var(--ok)',t:`Volume medio circa ${Math.round(a)} mL`,d:'Nella media indicativa di 200–400 mL per pipì.'}); }
+  // rapporto
+  if(st.inMl>300 && st.n>=2 && (!today||elapsed>.5)){
+    const r=st.outMl/st.inMl;
+    if(r>1.15) out.push({c:'var(--warn)',t:`Esce più di quanto entra (${Math.round(r*100)}%)`,d:'Di solito vuol dire che non hai segnato tutte le bevande, che le pipì sono stimate in eccesso, o che hai mangiato cibi molto ricchi d\'acqua.'});
+    else if(r<.4) out.push({c:'var(--warn)',t:`Esce poco rispetto a quanto bevi (${Math.round(r*100)}%)`,d:'Caldo, sudore e sport fanno perdere liquidi. Altrimenti controlla le stime o se manca qualche pipì.'});
+    else out.push({c:'var(--ok)',t:`Rapporto plausibile (${Math.round(r*100)}%)`,d:'Una parte di ciò che bevi si perde con respiro e sudore, mentre il cibo aggiunge acqua: valori intorno al 50–100% sono normali.'});
+  }
+  if(st.caf>400) out.push({c:'var(--warn)',t:`Caffeina stimata ${st.caf} mg`,d:'Sopra i 400 mg al giorno, il limite indicato come sicuro per un adulto sano.'});
+  return out;
+}
+function renderStats(st,ds){
+  const r= st.inMl? Math.round(st.outMl/st.inMl*100)+'%' : '–';
+  $('#stats').innerHTML=`<div class="st"><b style="color:var(--water)">${fmtL(st.inMl)}</b><span>bevuto</span></div>
+   <div class="st"><b style="color:var(--pee)">${fmtL(st.outMl)}</b><span>pipì stimata</span></div>
+   <div class="st"><b>${r}</b><span>uscita su entrata</span></div>
+   <div class="st"><b>${st.dayPees} + ${st.night}</b><span>pipì giorno + notte</span></div>
+   <div class="st"><b>${st.n?Math.round(st.avg)+' mL':'–'}</b><span>media per pipì</span></div>
+   <div class="st"><b>${st.caf} mg</b><span>caffeina</span></div>`;
+  const ckHTML=cs=>cs.map(c=>`<div class="ck" style="--c:${c.c}"><i></i><span><b>${esc(c.t)}</b><div>${esc(c.d)}</div></span></div>`).join('');
+  $('#checks').innerHTML=ckHTML(checksFor(st,ds));
+  const ua=st.alcG/12, colTxt=c=>c==null?'–':`<span class="cdot" style="background:${URINE[Math.round(c)-1]}"></span>${Math.round(c)}/8`;
+  const ex=[];
+  if(st.col!=null){ const c=st.lastCol; ex.push(c<=3?{c:'var(--ok)',t:'Colore chiaro',d:'Le ultime urine indicano una buona idratazione.'}: c<=5?{c:'var(--warn)',t:'Colore giallo intenso',d:'Indica che potresti bere un po\' di più.'}:{c:'var(--bad)',t:'Colore scuro',d:'Spesso è segno di disidratazione. Anche vitamine, farmaci e alcuni cibi cambiano il colore: se resta scuro nonostante tu beva, parlane col medico.'}); }
+  if(st.alcG>0) ex.push(ua>2?{c:'var(--bad)',t:`${nf(st.alcG)} g di alcol, ${nf(ua)} unità`,d:'Oltre le 2 unità al giorno indicate come limite per gli uomini (1 per le donne). Nessuna quantità è priva di rischi.'}: ua>1?{c:'var(--warn)',t:`${nf(st.alcG)} g di alcol, ${nf(ua)} unità`,d:'Entro le 2 unità al giorno indicate per gli uomini, oltre l\'unità indicata per le donne.'}:{c:'var(--ok)',t:`${nf(st.alcG)} g di alcol, ${nf(ua)} unità`,d:'Entro il limite di 1 unità (12 g).'});
+  if(st.sug>0) ex.push(st.sug>50?{c:'var(--bad)',t:`${st.sug} g di zuccheri dalle bevande`,d:'Oltre i 50 g al giorno che l\'OMS indica come tetto per gli zuccheri aggiunti. L\'ideale è sotto i 25 g.'}: st.sug>25?{c:'var(--warn)',t:`${st.sug} g di zuccheri dalle bevande`,d:'Entro i 50 g dell\'OMS, sopra l\'obiettivo ideale di 25 g.'}:{c:'var(--ok)',t:`${st.sug} g di zuccheri dalle bevande`,d:'Sotto i 25 g indicati come obiettivo ideale.'});
+  if(st.nightPct!=null && st.night>0 && st.nightPct>.33) ex.push({c:'var(--warn)',t:`Di notte circa il ${Math.round(st.nightPct*100)}% dell'urina`,d:'Più di un terzo del totale di notte è un dato utile da riferire al medico se si ripete.'});
+  if(st.leaks) ex.push({c:'var(--warn)',t:`${st.leaks} ${st.leaks===1?'perdita segnalata':'perdite segnalate'}`,d:'Se capitano spesso, il diario è utile da mostrare al medico.'});
+  $('#more').innerHTML=`<div class="stats">
+    <div class="st"><b>${colTxt(st.col)}</b><span>colore medio</span></div>
+    <div class="st"><b>${st.urg==null?'–':nf(st.urg)}</b><span>urgenza media (0–3)</span></div>
+    <div class="st"><b>${st.gap==null?'–':nf(st.gap/H)+' h'}</b><span>tra una pipì e l'altra</span></div>
+    <div class="st"><b>${st.nightPct==null?'–':Math.round(st.nightPct*100)+'%'}</b><span>urina di notte</span></div>
+    <div class="st"><b>${nf(st.alcG)} g</b><span>alcol, ${nf(ua)} unità</span></div>
+    <div class="st"><b>${st.sug} g</b><span>zuccheri bevande</span></div></div>
+    <div class="checks" style="margin-top:8px">${ckHTML(ex)||''}</div>`;
+}
+function renderDay(st,ds){
+  const W=340,Hh=120,pl=6,pr=6,top=10,base=92;
+  const hrs=Array.from({length:24},()=>0); st.dr.forEach(e=>hrs[new Date(e.ts).getHours()]+=e.ml);
+  const mx=Math.max(500,...hrs), cw=(W-pl-pr)/24;
+  const b=mins(S.settings.bed)/60, w=mins(S.settings.wake)/60;
+  const night = b>w ? `<rect x="${pl}" y="${top}" width="${cw*w}" height="${base-top}" fill="var(--ink)" opacity=".05"/><rect x="${pl+cw*b}" y="${top}" width="${cw*(24-b)}" height="${base-top}" fill="var(--ink)" opacity=".05"/>` : `<rect x="${pl+cw*b}" y="${top}" width="${cw*(w-b)}" height="${base-top}" fill="var(--ink)" opacity=".05"/>`;
+  const bars=hrs.map((v,i)=>v?`<rect x="${pl+i*cw+2}" y="${base-(base-top-14)*v/mx}" width="${cw-4}" height="${(base-top-14)*v/mx}" rx="3" fill="var(--water)"/>`:'').join('');
+  const drops=st.pe.map(e=>{ const d=new Date(e.ts), x=pl+(d.getHours()+d.getMinutes()/60)*cw; return `<circle cx="${x}" cy="${top+6}" r="${clamp(3+e.ml/100,3,8)}" fill="var(--pee)" stroke="var(--surface)" stroke-width="1.5"/>`; }).join('');
+  const now = dayOff===0 ? (()=>{ const d=new Date(); const x=pl+(d.getHours()+d.getMinutes()/60)*cw; return `<line x1="${x}" x2="${x}" y1="${top}" y2="${base}" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="3 3"/>`; })() : '';
+  const lab=[0,6,12,18,24].map(h=>`<text x="${pl+h*cw}" y="${Hh-12}" font-size="10" fill="var(--muted)" text-anchor="${h===0?'start':h===24?'end':'middle'}">${h}</text>`).join('');
+  $('#dayChart').innerHTML=`<svg viewBox="0 0 ${W} ${Hh-4}" role="img" aria-label="Bevande e pipì per ora del giorno">${night}<line x1="${pl}" x2="${W-pr}" y1="${base}" y2="${base}" stroke="var(--line)"/>${bars}${drops}${now}${lab}</svg>
+   <div class="legend"><span style="--c:var(--water)">bevuto per ora</span><span style="--c:var(--pee)">pipì</span><span style="--c:color-mix(in srgb,var(--ink) 12%,transparent)">notte</span></div>`;
+  $('#list').innerHTML = st.es.length? st.es.slice().reverse().map(e=>`<button class="row ${e.t}" data-e="${e.id}"><span class="tm">${hm(e.ts)}</span><span class="ic">${e.t==='pee'?'🟡':esc(e.e||'💧')}</span><span><span class="nm">${e.t==='pee'?'Pipì'+(isNight(e.ts)?' notturna':''):esc(e.n)}${e.t==='pee'&&e.col?`<span class="cdot" style="background:${URINE[e.col-1]}"></span>`:''}</span>${rowSub(e)}</span><span class="ml">${e.t==='pee'?'≈ ':'+'}${e.ml} mL</span></button>`).join('')
+    : `<div class="empty">${dayOff===0?'Nessuna registrazione oggi. Tocca una bevanda o +1 pipì.':'Nessuna registrazione in questo giorno.'}</div>`;
+}
+function renderToday(){
+  const ds=viewStart(), st=dayStats(ds);
+  $('#dLabel').textContent= dayOff===0?'Oggi':dayOff===1?'Ieri':new Date(ds).toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
+  $('#dNext').disabled= dayOff===0;
+  renderVessel(st); renderSizes(); renderStats(st,ds); renderDay(st,ds);
+  $('#peeN').textContent=st.n; $('#peeL').innerHTML=`pipì<br>${dayOff===0?'oggi':'quel giorno'}`;
+  const last=S.entries.filter(e=>e.t==='pee'&&e.ts<=Date.now()).sort((a,b)=>b.ts-a.ts)[0];
+  if(last){ const m=Math.round((Date.now()-last.ts)/6e4); $('#lastPee').textContent= m<1?'ora':m<60? m+' min fa' : m<1440? Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' fa' : Math.floor(m/1440)+' g fa'; } else $('#lastPee').textContent='–';
+}
+
+function rowSub(e){
+  const p=[];
+  if(e.t==='drink'){ if(e.caf) p.push(e.caf+' mg caffeina'); if(e.alcG) p.push(nf(e.alcG)+' g alcol'); if(e.sug) p.push(e.sug+' g zuccheri'); }
+  else { if(e.urg!=null) p.push('urgenza '+URG[e.urg].toLowerCase()); if(e.leak) p.push('perdita'); if(e.sym&&e.sym.length) p.push('⚠️ '+e.sym.map(s=>SYM[s].toLowerCase()).join(', ')); if(e.note) p.push(esc(e.note)); }
+  return p.length? `<div class="sb">${p.join(', ')}</div>` : '';
+}
+/* ---------- storico ---------- */
+let range=7;
+function renderHistory(){
+  const days=Array.from({length:range},(_,i)=>dayStart(Date.now())-(range-1-i)*DAY).map(ds=>({ds,...dayStats(ds)}));
+  const W=340,Hh=190,pl=34,pr=8,pt=12,pb=26, mx=Math.max(S.settings.target*1.15,...days.map(d=>Math.max(d.inMl,d.outMl)));
+  const cw=(W-pl-pr)/range, bw=Math.max(2,cw*.36), Y=v=>pt+(Hh-pt-pb)*(1-v/mx);
+  let g='';
+  [0,.5,1].forEach(f=>{ const v=mx*f; g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${pl-4}" y="${Y(v)+3}" text-anchor="end" font-size="9.5" fill="var(--muted)">${(v/1000).toFixed(1)}L</text>`; });
+  days.forEach((d,i)=>{ const x=pl+i*cw+cw/2;
+    if(d.inMl) g+=`<rect x="${x-bw-1}" y="${Y(d.inMl)}" width="${bw}" height="${Y(0)-Y(d.inMl)}" rx="3" fill="var(--water)"/>`;
+    if(d.outMl) g+=`<rect x="${x+1}" y="${Y(d.outMl)}" width="${bw}" height="${Y(0)-Y(d.outMl)}" rx="3" fill="var(--pee)"/>`;
+    const step=range<=7?1:range<=14?2:5;
+    if(i%step===0||i===range-1) g+=`<text x="${x}" y="${Hh-10}" text-anchor="middle" font-size="9.5" fill="var(--muted)">${new Date(d.ds).getDate()}/${new Date(d.ds).getMonth()+1}</text>`;
+  });
+  g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(S.settings.target)}" y2="${Y(S.settings.target)}" stroke="var(--ink)" stroke-dasharray="4 4" opacity=".6"/>`;
+  $('#hChart').innerHTML=`<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Bevuto e pipì stimata per giorno">${g}</svg>`;
+  const act=days.filter(d=>d.es.length), avg=k=>act.length? act.reduce((a,d)=>a+d[k],0)/act.length : 0;
+  const hit=act.filter(d=>d.inMl>=d.target).length;
+  $('#hStats').innerHTML=`<div class="st"><b style="color:var(--water)">${fmtL(avg('inMl'))}</b><span>bevuto medio</span></div>
+   <div class="st"><b style="color:var(--pee)">${nf(avg('n'))}</b><span>pipì al giorno</span></div>
+   <div class="st"><b>${nf(avg('night'))}</b><span>pipì a notte</span></div>
+   <div class="st"><b>${act.length?hit+'/'+act.length:'–'}</b><span>giorni a obiettivo</span></div>
+   <div class="st"><b>${fmtL(avg('outMl'))}</b><span>pipì stimata media</span></div>
+   <div class="st"><b>${nf(avg('alcG'))} g</b><span>alcol medio</span></div>`;
+  $('#hTable').innerHTML=`<tr><th>Giorno</th><th>Bevuto</th><th>Pipì</th><th>Notte</th><th>Stima</th></tr>`+days.slice().reverse().map(d=>`<tr><td>${new Date(d.ds).toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'})}</td><td style="color:var(--water);font-weight:800">${d.inMl?fmtL(d.inMl):'–'}</td><td>${d.n||'–'}</td><td>${d.night||'–'}</td><td style="color:var(--pee);font-weight:800">${d.outMl?fmtL(d.outMl):'–'}</td></tr>`).join('');
+}
+
+/* ---------- settings ---------- */
+function renderSettings(){
+  const s=S.settings; $('#sTarget').value=s.target; $('#sS').value=s.sizes[0]; $('#sM').value=s.sizes[1]; $('#sL').value=s.sizes[2]; $('#sBed').value=s.bed; $('#sWake').value=s.wake; $('#sTheme').value=s.theme;
+  $('#presetList').innerHTML=S.presets.map(p=>`<button class="prow" data-ep="${p.id}"><span class="e">${esc(p.e)}</span><span class="n">${esc(p.n)}</span><span class="m">${p.ml} mL${p.caf?', '+p.caf+' mg':''}${p.abv?', '+p.abv+'%':''}${p.sug?', '+p.sug+' g zucch.':''}</span></button>`).join('');
+  document.querySelectorAll('#qmode .chip').forEach(c=>c.classList.toggle('on',c.dataset.qm===s.qmode)); $('#sQ1').value=s.q1; $('#sQ2').value=s.q2; $('#qTimes').hidden= s.qmode==='off'; $('#sSport').value=s.sportMl; $('#sHeat').value=s.heatMl;
+  applyTheme();
+}
+function applyTheme(){ const t=S.settings.theme; if(t==='auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',t); }
+function renderAll(){ renderDrinks(); renderToday(); renderHistory(); renderSettings(); }
+
+/* ---------- add / edit ---------- */
+function addEntry(e,label,silent){
+  e.id=uid('e'); S.entries.push(e); save();
+  if(dayOff!==0 && dayStart(e.ts)!==viewStart()){ dayOff=0; }
+  renderToday(); if($('#v-history').classList.contains('on')) renderHistory();
+  if(!silent) toast(label,()=>{ S.entries=S.entries.filter(x=>x.id!==e.id); save(); renderToday(); qClose(); });
+  return e;
+}
+function nowForView(){ return dayOff===0? Date.now() : viewStart()+12*H; }
+function quickDrink(id,btn){
+  const p=S.presets.find(x=>x.id===id); if(!p) return;
+  addEntry({t:'drink',ts:nowForView(),ml:p.ml,n:p.n,e:p.e,caf:p.caf||0,alcG:alcG(p.ml,p.abv),sug:p.sug||0},`${p.e} ${p.n}: +${p.ml} mL`);
+  vib(15);
+  if(btn){ const f=document.createElement('span'); f.className='plus'; f.textContent='+'+p.ml; btn.appendChild(f); setTimeout(()=>f.remove(),800); }
+}
+function quickPee(){
+  const ml=S.settings.sizes[S.settings.size??1];
+  const q=S.settings.qmode!=='off';
+  const e=addEntry({t:'pee',ts:nowForView(),ml},`Pipì registrata, circa ${ml} mL`,q);
+  vib([20,30,20]); if(q){ $('#toast').classList.remove('on'); qOpen(e.id); }
+}
+/* sheet */
+let sheetKind=null;
+function openSheet(html,kind){ sheetKind=kind; $('#sheet').innerHTML='<div class="grab"></div>'+html; $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); $('#sheet').scrollTop=0; }
+function closeSheet(){ sheetKind=null; $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); }
+$('#scrim').addEventListener('click',closeSheet);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(!$('#dlg').hidden) dlgClose(false); else closeSheet(); } });
+const head=t=>`<div class="sh"><h2>${t}</h2><button class="x" data-x aria-label="Chiudi">✕</button></div>`;
+const toLocalInput=ts=>{ const d=new Date(ts); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); };
+let draft=null;
+function openEntry(id,type){
+  const e=id? S.entries.find(x=>x.id===id) : null;
+  draft= e? JSON.parse(JSON.stringify(e)) : (type==='pee'? {t:'pee',ts:nowForView(),ml:S.settings.sizes[1]} : {t:'drink',ts:nowForView(),ml:250,n:'Acqua',e:'💧',caf:0,alc:false,pid:'custom'});
+  renderEntry();
+}
+function renderEntry(){
+  const d=draft, isP=d.t==='pee';
+  const pid = d.pid || (S.presets.find(p=>p.n===d.n&&p.e===d.e)?.id) || 'custom';
+  openSheet(`${head(d.id?'Modifica':'Aggiungi a mano')}
+  <div class="seg" style="margin-top:8px"><button class="chip ${!isP?'on':''}" data-type="drink">💧 Bevanda</button><button class="chip ${isP?'on':''}" data-type="pee">🟡 Pipì</button></div>
+  <div class="fields" style="margin-top:12px">
+    ${isP? `<div class="field full"><label>Quantità stimata</label><div class="seg">${S.settings.sizes.map((v,i)=>`<button class="chip" data-quick="${v}">${['Poca','Normale','Tanta'][i]} ${v}</button>`).join('')}</div></div>
+      <div class="field full"><label>Colore</label><div class="qcolors">${URINE.map((c,i)=>`<button data-ecol="${i+1}" class="${d.col===i+1?'on':''}" style="background:${c}" aria-label="Colore ${i+1} di 8">${i+1}</button>`).join('')}</div></div>
+      <div class="field full"><label>Urgenza</label><div class="seg">${URG.map((u,i)=>`<button class="chip ${d.urg===i?'on':''}" data-eurg="${i}">${u}</button>`).join('')}</div></div>
+      <div class="field full"><label>Altro</label><div class="seg"><button class="chip ${d.leak?'on':''}" data-eleak>💧 Perdita</button>${Object.entries(SYM).map(([k,v])=>`<button class="chip ${(d.sym||[]).includes(k)?'on':''}" data-esym="${k}">${v}</button>`).join('')}</div></div>
+      <div class="field full"><label for="eNote">Nota</label><input id="eNote" value="${esc(d.note||'')}" maxlength="80" placeholder="Facoltativa"></div>`
+         : `<div class="field full"><label for="ePreset">Bevanda</label><select id="ePreset">${S.presets.map(p=>`<option value="${p.id}" ${p.id===pid?'selected':''}>${esc(p.e)} ${esc(p.n)} (${p.ml} mL)</option>`).join('')}<option value="custom" ${pid==='custom'?'selected':''}>✍️ Altro</option></select></div>
+           ${pid==='custom'?`<div class="field full"><label for="eName">Nome</label><input id="eName" value="${esc(d.n||'Acqua')}" maxlength="30"></div>
+           <div class="field"><label for="eAbv">Gradazione alcolica (%)</label><input id="eAbv" type="number" inputmode="decimal" min="0" max="80" step="0.5" value="${d.abv||0}"></div>
+           <div class="field"><label for="eSug">Zuccheri (g)</label><input id="eSug" type="number" inputmode="numeric" min="0" max="200" value="${d.sug||0}"></div>`:''}`}
+    <div class="field full"><label for="eMl">Quantità (mL)</label><div class="stepper"><button data-st="-50">−50</button><button data-st="-10">−10</button><input id="eMl" type="number" inputmode="numeric" min="1" max="5000" value="${d.ml}"><button data-st="10">+10</button><button data-st="50">+50</button></div></div>
+    <div class="field full"><label for="eTs">Data e ora</label><input id="eTs" type="datetime-local" value="${toLocalInput(d.ts)}"></div>
+  </div>
+  <div class="btns"><button class="btn ${isP?'pee':'pri'}" data-act="saveEntry" style="flex:1">${d.id?'Salva':'Aggiungi'}</button>${d.id?'<button class="btn danger" data-act="delEntry">Elimina</button>':''}</div>`,'entry');
+  d.pid=pid;
+}
+function readEntry(){
+  const d=draft; d.ml=clamp(Math.round(+$('#eMl').value||0),1,5000);
+  const ts=new Date($('#eTs').value).getTime(); if(!isNaN(ts)) d.ts=ts;
+  if(d.t==='drink'){ const sel=$('#ePreset').value; d.pid=sel;
+    if(sel==='custom'){ const n=$('#eName'); d.n=(n?n.value.trim():d.n)||'Altro'; d.e='💧'; d.caf=d.caf||0; const a=$('#eAbv'), s=$('#eSug'); d.abv=a?clamp(+a.value||0,0,80):(d.abv||0); d.sug=s?clamp(Math.round(+s.value||0),0,200):(d.sug||0); d.alcG=alcG(d.ml,d.abv); }
+    else { const p=S.presets.find(x=>x.id===sel); d.n=p.n; d.e=p.e; d.caf=p.caf||0; d.alcG=alcG(d.ml,p.abv); d.sug=p.sug||0; } }
+  else { const n=$('#eNote'); if(n) d.note=n.value.trim(); }
+}
+let draftP=null;
+function openPreset(id){
+  const p=id? S.presets.find(x=>x.id===id) : null;
+  draftP= p? {...p} : {id:null,e:'💧',n:'',ml:250,caf:0,abv:0,sug:0};
+  openSheet(`${head(p?'Modifica bevanda':'Nuova bevanda')}
+  <div class="fields" style="margin-top:12px">
+    <div class="field"><label for="pE">Emoji</label><input id="pE" value="${esc(draftP.e)}" maxlength="4"></div>
+    <div class="field"><label for="pMl">Quantità (mL)</label><input id="pMl" type="number" inputmode="numeric" min="1" max="3000" value="${draftP.ml}"></div>
+    <div class="field full"><label for="pN">Nome</label><input id="pN" value="${esc(draftP.n)}" maxlength="24" placeholder="Es. Spremuta"></div>
+    <div class="field"><label for="pC">Caffeina (mg)</label><input id="pC" type="number" inputmode="numeric" min="0" max="500" value="${draftP.caf||0}"></div>
+    <div class="field"><label for="pA">Gradazione alcolica (%)</label><input id="pA" type="number" inputmode="decimal" min="0" max="80" step="0.5" value="${draftP.abv||0}"></div>
+    <div class="field"><label for="pS">Zuccheri (g)</label><input id="pS" type="number" inputmode="numeric" min="0" max="200" value="${draftP.sug||0}"></div>
+  </div>
+  <div class="btns"><button class="btn pri" data-act="savePreset" style="flex:1">Salva</button>${p?'<button class="btn sm" data-act="upPreset">↑ Sposta su</button><button class="btn danger" data-act="delPreset">Elimina</button>':''}</div>`,'preset');
+}
+function openInfo(){
+  openSheet(`${head('Come leggere i dati')}<div class="info">
+  <p><b>Le quantità sono stime.</b> I pulsanti usano volumi medi: bicchiere 200 mL, espresso 30 mL, moka 50 mL, cappuccino circa 160 mL. Se le tue tazze o bottiglie sono diverse, cambiale in Impostazioni.</p>
+  <p><b>Pipì.</b> Una pipì media di un adulto è intorno a 200–400 mL. "Poca", "Normale" e "Tanta" sono stime che puoi regolare. Per un valore preciso usa ✍️ e scrivi i millilitri, per esempio misurandoli ogni tanto con un contenitore graduato.</p>
+  <p><b>Valori di riferimento indicativi per un adulto in salute:</b></p>
+  <ul><li>4–8 pipì di giorno e al massimo una di notte</li><li>urina totale circa 0,8–2 litri al giorno</li><li>liquidi: circa 2 L al giorno per le donne e 2,5 L per gli uomini, contando anche l'acqua del cibo, che è circa un quinto</li><li>caffeina: fino a 400 mg al giorno</li></ul>
+  <p><b>Colore.</b> La scala va da 1 (quasi trasparente) a 8 (ambra scuro). Da 1 a 3 indica di solito una buona idratazione, da 6 in su spesso poca acqua. Vitamine del gruppo B, alcuni farmaci e cibi come le barbabietole possono alterarlo.</p>
+  <p><b>Alcol.</b> I grammi si calcolano come mL × gradazione × 0,79. Un'unità alcolica italiana corrisponde a 12 g. Le linee guida indicano di non superare 2 unità al giorno per gli uomini e 1 per le donne, ma nessuna quantità è priva di rischi.</p>
+  <p><b>Uscita su entrata.</b> Parte dei liquidi si perde con respiro e sudore, mentre il cibo ne aggiunge. Per questo l'urina non coincide con quanto bevi: valori tra il 50% e il 100% sono comuni.</p>
+  <p><b>Quando sentire il medico</b>, indipendentemente dai numeri: bruciore o dolore, sangue nelle urine, febbre con disturbi urinari, urgenza improvvisa o perdite, urina sempre molto scura nonostante tu beva, oppure un cambiamento marcato e persistente rispetto alle tue abitudini.</p>
+  <p class="muted small">Goccia è uno strumento di automonitoraggio e non fa diagnosi. Il diario può essere utile da mostrare al medico: esporta i dati da Impostazioni.</p></div>`,'info');
+}
+
+/* ---------- barra rapida dopo +1 ---------- */
+let qId=null, qT=null;
+function qEntry(){ return S.entries.find(x=>x.id===qId); }
+function qRender(){
+  const e=qEntry(); if(!e) return qClose();
+  $('#qbar').innerHTML=`<div class="qprog"><i id="qprog"></i></div>
+   <div class="qhead"><span class="qt"><b>Pipì registrata, ≈ ${e.ml} mL</b><small>Dettagli facoltativi</small></span><button class="btn sm" id="qUndo">Annulla</button><button class="btn sm pee" id="qDone">✓ Fatto</button></div>
+   <div class="qcolors">${URINE.map((c,i)=>`<button data-qcol="${i+1}" class="${e.col===i+1?'on':''}" style="background:${c}" aria-label="Colore ${i+1} di 8">${e.col===i+1?'✓':''}</button>`).join('')}</div>
+   <div class="qscale"><span>chiara</span><span>scura</span></div>
+   <div class="qurg"><span>Urgenza</span>${URG.map((u,i)=>`<button class="chip ${e.urg===i?'on':''}" data-qurg="${i}">${u}</button>`).join('')}</div>
+   <div class="seg" style="margin-top:6px"><button class="chip ${e.leak?'on':''}" data-qleak>💧 Perdita</button>${Object.entries(SYM).map(([k,v])=>`<button class="chip ${(e.sym||[]).includes(k)?'on':''}" data-qsym="${k}">${v}</button>`).join('')}</div>`;
+}
+function qTimer(sec){
+  clearTimeout(qT); const bar=$('#qprog'); if(!bar) return;
+  bar.style.transition='none'; bar.style.width='100%'; void bar.offsetWidth;
+  bar.style.transition=`width ${sec}s linear`; bar.style.width='0%';
+  qT=setTimeout(qClose,sec*1000);
+}
+function qOpen(id){ qId=id; qRender(); const q=$('#qbar'); q.hidden=false; requestAnimationFrame(()=>q.classList.add('on')); qTimer(S.settings.q1); }
+function qClose(){ clearTimeout(qT); const q=$('#qbar'); q.classList.remove('on'); setTimeout(()=>{ if(!q.classList.contains('on')) q.hidden=true; },250); qId=null; }
+function qTouched(){ save(); qRender(); renderToday(); qTimer(S.settings.q2); }
+$('#qbar').addEventListener('click',e=>{
+  const t=e.target.closest('button'); if(!t) return; const en=qEntry(); if(!en) return qClose();
+  if(t.id==='qDone') return qClose();
+  if(t.id==='qUndo'){ S.entries=S.entries.filter(x=>x.id!==en.id); save(); renderToday(); qClose(); toast('Pipì annullata'); return; }
+  if(t.dataset.qcol){ const v=+t.dataset.qcol; en.col= en.col===v? null : v; return qTouched(); }
+  if(t.dataset.qurg){ const v=+t.dataset.qurg; en.urg= en.urg===v? null : v; return qTouched(); }
+  if(t.hasAttribute('data-qleak')){ en.leak=!en.leak; return qTouched(); }
+  if(t.dataset.qsym){ const k=t.dataset.qsym; en.sym=en.sym||[]; en.sym= en.sym.includes(k)? en.sym.filter(x=>x!==k) : [...en.sym,k]; return qTouched(); }
+});
+$('#qbar').addEventListener('pointerdown',()=>{ clearTimeout(qT); const b=$('#qprog'); if(b){ const w=getComputedStyle(b).width; b.style.transition='none'; b.style.width=w; } });
+(()=>{ let y0=null; const q=$('#qbar'); q.addEventListener('touchstart',e=>{ y0=e.touches[0].clientY; },{passive:true}); q.addEventListener('touchend',e=>{ if(y0!=null && e.changedTouches[0].clientY-y0>40) qClose(); y0=null; }); q.addEventListener('pointerup',e=>{ if(qId && !e.target.closest('button')) qTimer(S.settings.q2); }); })();
+
+/* ---------- export diario ---------- */
+async function exportDiary(n){
+  const from=dayStart(Date.now())-(n-1)*DAY, es=S.entries.filter(e=>e.ts>=from).sort((a,b)=>a.ts-b.ts);
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const rows=[['Data','Ora','Tipo','Descrizione','mL','Notturna','Colore (1-8)','Urgenza (0-3)','Perdita','Sintomi','Caffeina mg','Alcol g','Zuccheri g','Nota']];
+  es.forEach(e=>{ const d=new Date(e.ts); rows.push([d.toLocaleDateString('it-IT'),hm(e.ts),e.t==='pee'?'Pipì':'Bevanda',e.t==='pee'?'':e.n,e.ml,e.t==='pee'&&isNight(e.ts)?'sì':'',e.col||'',e.urg??'',e.leak?'sì':'',(e.sym||[]).map(s=>SYM[s]).join(' '),e.caf||'',e.alcG||'',e.sug||'',e.note||'']); });
+  rows.push([]); rows.push(['Riepilogo giornaliero']); rows.push(['Data','Bevuto mL','Pipì','di cui notturne','Urina stimata mL','Obiettivo mL']);
+  for(let i=0;i<n;i++){ const ds=from+i*DAY, st=dayStats(ds); rows.push([new Date(ds).toLocaleDateString('it-IT'),st.inMl,st.n,st.night,st.outMl,st.target]); }
+  const data='\ufeff'+rows.map(r=>r.map(q).join(';')).join('\r\n'), filename=`goccia-diario-${n}-giorni.csv`;
+  try{ if(window.claude){ const dl=await window.claude.use('downloads'); if(dl){ await dl.save({filename,data,mimeType:'text/csv'}); closeSheet(); return; } } }catch(e){ return; }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'text/csv'})); a.download=filename; a.click(); closeSheet();
+}
+
+/* ---------- events ---------- */
+document.querySelector('nav.tabs').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return;
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.removeAttribute('aria-current')); b.setAttribute('aria-current','page');
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));
+  $('.daynav').style.visibility= b.dataset.v==='today'?'visible':'hidden';
+  if(b.dataset.v==='history') renderHistory(); scrollTo({top:0}); });
+$('#dPrev').addEventListener('click',()=>{ dayOff=Math.min(dayOff+1,365); lastLevel=null; renderToday(); });
+$('#dNext').addEventListener('click',()=>{ dayOff=Math.max(dayOff-1,0); lastLevel=null; renderToday(); });
+$('#drinks').addEventListener('click',e=>{ const b=e.target.closest('[data-p]'); if(!b) return; if(b.dataset.p==='manual') openEntry(null,'drink'); else quickDrink(b.dataset.p,b); });
+let lpT=null, lpFired=false;
+$('#peeBtn').addEventListener('pointerdown',()=>{ lpFired=false; clearTimeout(lpT); lpT=setTimeout(()=>{ lpFired=true; vib(30); openEntry(null,'pee'); },550); });
+['pointerup','pointerleave','pointercancel'].forEach(ev=>$('#peeBtn').addEventListener(ev,()=>clearTimeout(lpT)));
+$('#peeBtn').addEventListener('contextmenu',e=>e.preventDefault());
+$('#peeBtn').addEventListener('click',e=>{ if(lpFired){ lpFired=false; return; } const b=e.currentTarget, r=b.getBoundingClientRect(), s=document.createElement('span'); s.className='ripple'; const z=Math.max(r.width,r.height); Object.assign(s.style,{width:z+'px',height:z+'px',left:(e.clientX-r.left-z/2||r.width/2-z/2)+'px',top:(e.clientY-r.top-z/2||r.height/2-z/2)+'px'}); b.appendChild(s); setTimeout(()=>s.remove(),600); quickPee(); });
+$('#sizes').addEventListener('click',e=>{ const b=e.target.closest('[data-size]'); if(!b) return; if(b.dataset.size==='m') return openEntry(null,'pee'); S.settings.size=+b.dataset.size; save(); renderSizes(); });
+$('#list').addEventListener('click',e=>{ const b=e.target.closest('[data-e]'); if(b) openEntry(b.dataset.e); });
+$('#addManual').addEventListener('click',()=>openEntry(null,'drink'));
+$('#infoBtn').addEventListener('click',openInfo);
+$('#range').addEventListener('click',e=>{ const b=e.target.closest('[data-r]'); if(!b) return; range=+b.dataset.r; document.querySelectorAll('#range .chip').forEach(c=>c.classList.toggle('on',c===b)); renderHistory(); });
+// settings
+const setNum=(id,fn)=>$(id).addEventListener('change',e=>{ fn(+e.target.value); save(); renderAll(); });
+setNum('#sTarget',v=>S.settings.target=clamp(v||2000,500,6000));
+setNum('#sS',v=>S.settings.sizes[0]=clamp(v||150,20,1000));
+setNum('#sM',v=>S.settings.sizes[1]=clamp(v||250,20,1000));
+setNum('#sL',v=>S.settings.sizes[2]=clamp(v||400,20,1500));
+$('#sBed').addEventListener('change',e=>{ S.settings.bed=e.target.value||'23:00'; save(); renderAll(); });
+$('#sWake').addEventListener('change',e=>{ S.settings.wake=e.target.value||'07:00'; save(); renderAll(); });
+$('#sTheme').addEventListener('change',e=>{ S.settings.theme=e.target.value; save(); applyTheme(); });
+setNum('#sSport',v=>S.settings.sportMl=clamp(v||0,0,3000));
+setNum('#sHeat',v=>S.settings.heatMl=clamp(v||0,0,3000));
+$('#qmode').addEventListener('click',e=>{ const b=e.target.closest('[data-qm]'); if(!b) return; const m=b.dataset.qm; S.settings.qmode=m; if(QSPEED[m]) [S.settings.q1,S.settings.q2]=QSPEED[m]; save(); renderSettings(); });
+['#sQ1','#sQ2'].forEach((id,i)=>$(id).addEventListener('change',e=>{ const v=clamp(+e.target.value||(i?4:6),1,60); if(i) S.settings.q2=v; else S.settings.q1=v; const m=Object.entries(QSPEED).find(([k,[a,b]])=>a===S.settings.q1&&b===S.settings.q2); S.settings.qmode= m? m[0] : 'custom'; save(); renderSettings(); }));
+$('#flags').addEventListener('click',e=>{ const b=e.target.closest('[data-flag]'); if(!b) return; const k=dKey(viewStart()); S.days[k]=Object.assign({},S.days[k]); S.days[k][b.dataset.flag]=!S.days[k][b.dataset.flag]; if(!S.days[k].sport&&!S.days[k].heat) delete S.days[k]; save(); renderToday(); vib(10); });
+$('#exportDiary').addEventListener('click',()=>openSheet(`${head('Diario per il medico')}<p class="muted" style="margin:6px 0 0">Un file CSV con tutte le registrazioni, apribile con Excel o Numbers. Spesso il medico chiede almeno 3 giorni consecutivi.</p><div class="btns">${[3,7,30].map(n=>`<button class="btn" data-diary="${n}">Ultimi ${n} giorni</button>`).join('')}</div>`,'diary'));
+$('#presetList').addEventListener('click',e=>{ const b=e.target.closest('[data-ep]'); if(b) openPreset(b.dataset.ep); });
+$('#addPreset').addEventListener('click',()=>openPreset(null));
+$('#resetPresets').addEventListener('click',()=>ask('Ripristinare le bevande predefinite? Quelle personalizzate verranno rimosse.','Ripristina',()=>{ S.presets=DEF_PRESETS.map(p=>({id:uid('p'),...p})); save(); renderAll(); }));
+$('#bExport').addEventListener('click',async()=>{
+  const data=JSON.stringify(S,null,2), filename='goccia-backup.json';
+  try{ if(window.claude){ const dl=await window.claude.use('downloads'); if(dl){ await dl.save({filename,data}); return; } } }catch(e){ return; }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'})); a.download=filename; a.click();
+});
+$('#bImport').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result); if(!Array.isArray(o.entries)) throw 0; S=Object.assign(defState(),o); S.settings=Object.assign(defState().settings,o.settings||{}); save(); renderAll(); toast('Backup importato'); }catch(err){ toast('File non valido: serve un backup di Goccia'); } }; r.readAsText(f); e.target.value=''; });
+$('#bReset').addEventListener('click',()=>ask('Cancellare tutte le registrazioni? Impostazioni e bevande restano.','Cancella',()=>{ S.entries=[]; save(); renderAll(); toast('Registrazioni cancellate'); },true));
+// sheet
+const sheet=$('#sheet');
+sheet.addEventListener('change',e=>{ if(e.target.id==='ePreset'){ readEntry(); const p=S.presets.find(x=>x.id===draft.pid); if(p) draft.ml=p.ml; renderEntry(); } });
+sheet.addEventListener('click',e=>{
+  const t=e.target.closest('button'); if(!t) return;
+  if(t.hasAttribute('data-x')) return closeSheet();
+  if(t.dataset.type){ readEntry(); if(draft.t!==t.dataset.type){ draft.t=t.dataset.type; draft.ml= draft.t==='pee'? S.settings.sizes[1] : 250; if(draft.t==='drink'){ draft.n='Acqua'; draft.e='💧'; draft.pid='custom'; } } return renderEntry(); }
+  if(t.dataset.diary){ exportDiary(+t.dataset.diary); return; }
+  if(t.dataset.quick){ $('#eMl').value=t.dataset.quick; return; }
+  if(t.dataset.ecol){ const v=+t.dataset.ecol; draft.col= draft.col===v? null : v; t.parentElement.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.ecol===draft.col)); return; }
+  if(t.dataset.eurg){ const v=+t.dataset.eurg; draft.urg= draft.urg===v? null : v; t.parentElement.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.eurg===draft.urg)); return; }
+  if(t.hasAttribute('data-eleak')){ draft.leak=!draft.leak; t.classList.toggle('on',draft.leak); return; }
+  if(t.dataset.esym){ const k=t.dataset.esym; draft.sym=draft.sym||[]; draft.sym= draft.sym.includes(k)? draft.sym.filter(x=>x!==k) : [...draft.sym,k]; t.classList.toggle('on'); return; }
+  if(t.dataset.st){ const i=$('#eMl'); i.value=clamp((+i.value||0)+(+t.dataset.st),1,5000); return; }
+  switch(t.dataset.act){
+    case 'saveEntry': { readEntry(); const d=draft; delete d.pid; delete d.abv;
+      if(d.id){ const i=S.entries.findIndex(x=>x.id===d.id); S.entries[i]=d; save(); }
+      else { d.id=uid('e'); S.entries.push(d); save(); }
+      const ds=dayStart(d.ts), off=Math.round((dayStart(Date.now())-ds)/DAY); if(off>=0) dayOff=off; lastLevel=null;
+      closeSheet(); renderToday(); renderHistory(); toast(d.t==='pee'?`Pipì ${hm(d.ts)}, ${d.ml} mL`:`${d.n}: ${d.ml} mL`); break; }
+    case 'delEntry': { const id=draft.id, old=S.entries.find(x=>x.id===id); S.entries=S.entries.filter(x=>x.id!==id); save(); closeSheet(); renderToday(); renderHistory(); toast('Eliminata',()=>{ S.entries.push(old); save(); renderToday(); renderHistory(); }); break; }
+    case 'savePreset': { const p=draftP; p.e=$('#pE').value.trim()||'💧'; p.n=$('#pN').value.trim(); p.ml=clamp(Math.round(+$('#pMl').value||0),1,3000); p.caf=clamp(Math.round(+$('#pC').value||0),0,500); p.abv=clamp(+$('#pA').value||0,0,80); p.sug=clamp(Math.round(+$('#pS').value||0),0,200);
+      if(!p.n){ toast('Dai un nome alla bevanda'); return; }
+      if(p.id){ const i=S.presets.findIndex(x=>x.id===p.id); S.presets[i]=p; } else { p.id=uid('p'); S.presets.push(p); }
+      save(); renderAll(); closeSheet(); break; }
+    case 'upPreset': { const i=S.presets.findIndex(x=>x.id===draftP.id); if(i>0){ [S.presets[i-1],S.presets[i]]=[S.presets[i],S.presets[i-1]]; save(); renderAll(); } closeSheet(); break; }
+    case 'delPreset': { const id=draftP.id; S.presets=S.presets.filter(x=>x.id!==id); save(); renderAll(); closeSheet(); break; }
+  }
+});
+
+/* ---------- boot ---------- */
+load(); applyTheme(); renderAll(); initCloud();
+setInterval(()=>{ if(!document.hidden && !sheet.classList.contains('on')) renderToday(); },60000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) renderToday(); });
+if('serviceWorker' in navigator && location.protocol==='https:' && !/claude/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
